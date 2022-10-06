@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-consumer-config
+data:
+  MYSQL_DOMAIN: {{ .Release.Name }}-mysql-service.mdanishkhan14-dev.svc.cluster.local
+  {{- toYaml .Values.config.common | nindent 2 -}}
+  {{- toYaml  .Values.config.consumer  | nindent 2 -}}

@@ -1,0 +1,46 @@
+{{- $deploymentName := printf "%s-%s" $.Release.Name "consumer" -}}
+{{- with .Values.deployments.consumer -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $deploymentName }}
+  labels:
+    name: {{ $deploymentName }}
+spec:
+  selector: 
+    matchLabels:
+      name: {{ $deploymentName }}
+  replicas: 1
+  strategy: 
+    {{- toYaml .strategy | nindent 4 }}
+  template:
+    metadata:
+      labels: 
+        name: {{ $deploymentName }}
+    spec:
+      containers:
+      - name: {{ $deploymentName }}
+        image: {{ .image }}:{{ .tag }}
+        ports:
+        - containerPort: {{ .containerPort }}
+        imagePullPolicy: {{ .imagePullPolicy }}
+        resources: 
+          {{- toYaml .resources | nindent 10 }}
+        livenessProbe: 
+          {{- toYaml .livenessProbe | nindent 10 }}
+        readinessProbe: 
+           {{- toYaml .readinessProbe | nindent 10 }}
+        volumeMounts:
+          - mountPath: /SharedFolder/applicationlogs/
+            name: logs-vol
+        envFrom:
+          - configMapRef:
+              name: {{ $.Release.Name }}-consumer-config
+        env:
+          {{- toYaml $.Values.deployments.env | nindent 10 }}
+      restartPolicy: Always
+      volumes:
+        - name: logs-vol
+          persistentVolumeClaim:
+            claimName: {{ .persistence.existingClaim -}}
+{{- end -}}

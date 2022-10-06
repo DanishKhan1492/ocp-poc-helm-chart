@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-mysql-service
+spec:
+  type: {{ .Values.services.producer.type }}
+  selector:
+    name: {{ .Release.Name }}-mysql
+  ports:
+  {{- toYaml .Values.services.mysql.ports | nindent 2 }}

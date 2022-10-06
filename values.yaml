@@ -1,0 +1,156 @@
+deployments:
+  consumer:
+    image: danishkyndryl/learningapis
+    tag: empconsumer
+    containerPort: 10001
+    replicaCount: 1
+
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 0
+      type: RollingUpdate
+
+    imagePullPolicy: Always
+
+    resources: 
+      limits:
+        memory: 800Mi
+        cpu: 300m
+
+    livenessProbe: 
+      httpGet:
+        path: /empconsumer/health
+        port: 10001
+      initialDelaySeconds: 60
+      timeoutSeconds: 20
+      failureThreshold: 5
+
+    readinessProbe: 
+      httpGet:
+        path: /empconsumer/health
+        port: 10001
+      initialDelaySeconds: 120
+      timeoutSeconds: 10
+      failureThreshold: 3
+    persistence:
+      existingClaim: consumerlogs-pvc
+
+  producer:
+    consumer:
+    image: danishkyndryl/learningapis
+    tag: empproducer
+    containerPort: 10000
+    replicaCount: 1
+
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 0
+      type: RollingUpdate
+
+    imagePullPolicy: Always
+
+    resources: 
+      limits:
+        memory: 800Mi
+        cpu: 300m
+
+    livenessProbe: 
+      httpGet:
+        path: /empproducer/health
+        port: 10000
+      initialDelaySeconds: 60
+      timeoutSeconds: 20
+      failureThreshold: 5
+
+    readinessProbe: 
+      httpGet:
+        path: /empproducer/health
+        port: 10000
+      initialDelaySeconds: 120
+      timeoutSeconds: 10
+      failureThreshold: 3
+    persistence:
+      existingClaim: producerlogs-pvc
+  
+  mysql:
+    image: mysql
+    tag: 8.0.29
+    containerPort: 3306
+    replicaCount: 1
+
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 0
+      type: RollingUpdate
+
+    imagePullPolicy: Always
+
+    livenessProbe: 
+      exec:
+        command:
+          - "bash"
+          - "-c"
+          - "mysqladmin --user=root --password=${MYSQL_ROOT_PASSWORD} ping"
+      initialDelaySeconds: 10
+      timeoutSeconds: 20
+      failureThreshold: 3
+
+    readinessProbe: 
+      exec:
+        command: 
+        - bash
+        - -c
+        - mysql --user=root --password=${MYSQL_ROOT_PASSWORD} --execute="SHOW DATABASES;"
+      initialDelaySeconds: 5
+      timeoutSeconds: 2
+      failureThreshold: 3
+
+    persistence:
+      existingClaim:  mysql-pvc
+
+  env:
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: POD
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace  
+
+
+config:
+  domain: 
+  common:
+    KAFKA_DOMAIN: kafka-headless.mdanishkhan14-dev.svc.cluster.local
+    KAFKA_PORT: "9092"
+    LOG_PATH: /app/applicationlogs
+  consumer:
+    MYSQL_PORT: "3306"
+  mysql:
+    MYSQL_ROOT_PASSWORD: "root"
+    MYSQL_ROOT_HOST: "%"
+
+services:
+  consumer:
+    type: ClusterIP
+    ports:
+    - port: 10001
+      targetPort: 10001
+  producer:
+    type: ClusterIP
+    ports:
+    - port: 10000
+      targetPort: 10000
+  mysql:
+    type: ClusterIP
+    ports:
+    - port: 3306
+      targetPort: 3306
