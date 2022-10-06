@@ -127,7 +127,6 @@ deployments:
 
 
 config:
-  domain: 
   common:
     KAFKA_DOMAIN: kafka-headless.mdanishkhan14-dev.svc.cluster.local
     KAFKA_PORT: "9092"
