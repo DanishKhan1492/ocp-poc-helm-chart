@@ -1,7 +1,7 @@
 deployments:
   consumer:
-    image: hwsw-cms-lite-docker-local/empconsumer
-    tag: empconsumer
+    image: na.artifactory.taas.kyndryl.net/hwsw-cms-lite-docker-local/empconsumer
+    tag: latest
     containerPort: 10001
     replicaCount: 1
 
@@ -38,7 +38,7 @@ deployments:
 
   producer:
     consumer:
-    image: hwsw-cms-lite-docker-local/empproducer
+    image: na.artifactory.taas.kyndryl.net/hwsw-cms-lite-docker-local/empproducer
     tag: latest
     containerPort: 10000
     replicaCount: 1
