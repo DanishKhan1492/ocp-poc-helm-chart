@@ -1,6 +1,6 @@
 deployments:
   consumer:
-    image: danishkyndryl/learningapis
+    image: hwsw-cms-lite-docker-local/empconsumer
     tag: empconsumer
     containerPort: 10001
     replicaCount: 1
@@ -38,8 +38,8 @@ deployments:
 
   producer:
     consumer:
-    image: danishkyndryl/learningapis
-    tag: empproducer
+    image: hwsw-cms-lite-docker-local/empproducer
+    tag: latest
     containerPort: 10000
     replicaCount: 1
 
